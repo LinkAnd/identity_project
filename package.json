@@ -1,0 +1,23 @@
+{
+  "name": "identity_api",
+  "version": "1.0.0",
+  "description": "api for authorization",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "api",
+    "linkand"
+  ],
+  "author": "josselin chevalay",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.13.4",
+    "lodash": "^4.12.0",
+    "mongoose": "^4.4.17",
+    "passport": "^0.3.2",
+    "passport-facebook": "^2.1.1",
+    "passport-local": "^1.0.0"
+  }
+}
