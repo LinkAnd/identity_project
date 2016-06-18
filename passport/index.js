@@ -5,23 +5,30 @@ var LocalStrategy    = require('passport-local').Strategy;
 var FacebookStrategy = require('passport-facebook').Strategy;
 var config           = require('../config');
 // load up the user model
+var mongoose = require('mongoose');
 var User       = require('../model/user');
 
 
 
-module.exports = function(passport, mongoose) {
 
-    var model = new User(mongoose);
-
+module.exports = function(passport, config, logger) {   
     // used to serialize the user for the session
     passport.serializeUser(function(user, done) {
-        done(null, user.id);
+        done(null, user._id);
     });
 
     // used to deserialize the user
     passport.deserializeUser(function(id, done) {
-        model.findById(id, function(err, docs){
-            done(err, docs);
+        mongoose.connect(config.db.connectionString);
+        var db= mongoose.connection;
+        db.on('error', function(err){
+            logger.error('mongo '+err);
+        });
+        db.once('open', function(){
+           User.findById(id, function(err, doc){
+               mongoose.connection.close();
+               done(doc);
+           });
         });
     });
     
@@ -42,62 +49,40 @@ module.exports = function(passport, mongoose) {
 
     // facebook will send back the token and profile
     function(token, refreshToken, profile, done) {
-
-        // asynchronous
-        process.nextTick(function() {
-             console.log(profile);
-             model.find({fbUID:profile.id}, function(err, docs){
+        mongoose.connect(config.db.connectionString);
+        var db= mongoose.connection;
+        db.on('error', function(err){
+            logger.error('mongo '+err);
+        });
+        db.once('open', function(){
+            User.find({fbUID:profile.id}, function(err, docs){
                 if(err)
                     return done(err);
 
                 if(docs.length === 1){
-                    console.log('welcome '+ profile.displayName);
-                    return done(null, docs[0]);
+                    logger.info('check '+profile.displayName);
+                    docs[0].token = token;
+                    docs[0].save(function(err, doc){
+                        logger.info('connected '+profile.displayName)
+                        mongoose.connection.close();
+                        done(null, docs[0]);
+                    });                    
                 }else{
-                    console.log('hello dude '+profile.displayName);
-                    var user = new User(mongoose);
-                    user.fbUID = profile.id;
-                    user.userName = profile.displayName;
-                    user.save(function(err, ))
-                }
-             });
-             return;
-            // find the user in the database based on their facebook id
-            User.findOne({ 'facebook.id' : profile.id }, function(err, user) {
-
-                // if there is an error, stop everything and return that
-                // ie an error connecting to the database
-                if (err)
-                    return done(err);
-
-                // if the user is found, then log them in
-                if (user) {
-                    return done(null, user); // user found, return that user
-                } else {
-                    // if there is no user found with that facebook id, create them
-                    var newUser            = new User();
-
-                    // set all of the facebook information in our user model
-                    newUser.facebook.id    = profile.id; // set the users facebook id                   
-                    newUser.facebook.token = token; // we will save the token that facebook provides to the user                    
-                    newUser.facebook.name  = profile.name.givenName + ' ' + profile.name.familyName; // look at the passport user profile to see how names are returned
-                    newUser.facebook.email = profile.emails[0].value; // facebook can return multiple emails so we'll take the first
-
-                    // save our user to the database
-                    newUser.save(function(err) {
-                        if (err)
-                            throw err;
-
-                        // if successful, return the new user
-                        return done(null, newUser);
+                    logger.info('new :'+profile.displayName);
+                    var user = new User({
+                        fbUID: profile.id,
+                        userName: profile.displayName,
+                        token: token
                     });
+                    user.save(function(err, doc){
+                        logger.info('persist '+profile.displayName);
+                        mongoose.connection.close();
+                        done(null, user);
+                    })
                 }
-
             });
         });
-
     }));
-
     return passport;
 
 };

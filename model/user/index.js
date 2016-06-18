@@ -1,15 +1,13 @@
-var User = function(mongoose){
-	var Schema = mongoose.Schema,
-    ObjectId = Schema.ObjectId;
+var mongoose = require('mongoose');
+var Schema = mongoose.Schema;
 
-    return mongoose.model('User', new Schema({
-    	userName: String,
-    	fbUID: String,
-    	tweetUID: String,
-    	img: String,
-    	points: {type:Number, default:0}
-    }));
-};
+var userSchema = new Schema({
+	userName: String,
+    fbUID: String,
+    tweetUID: String,
+    img: String,
+    points: {type:Number, default:0},
+    token: String
+});
 
-
-module.exports = User;
+module.exports = mongoose.model('User', userSchema);

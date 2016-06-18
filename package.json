@@ -13,11 +13,17 @@
   "author": "josselin chevalay",
   "license": "MIT",
   "dependencies": {
+    "body-parser": "^1.15.1",
+    "cookie-parser": "^1.4.2",
     "express": "^4.13.4",
+    "express-session": "^1.13.0",
+    "express-sessions": "^1.0.5",
     "lodash": "^4.12.0",
+    "log4js": "^0.6.37",
     "mongoose": "^4.4.17",
     "passport": "^0.3.2",
     "passport-facebook": "^2.1.1",
+    "passport-facebook-token": "^3.2.0",
     "passport-local": "^1.0.0"
   }
 }
