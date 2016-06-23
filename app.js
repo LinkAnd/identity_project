@@ -47,24 +47,28 @@ app.get('/auth/facebook/callback',
 }));
 
 function isLogged(req, res, next){
-	log.debug('isLogged ici');
-	mongoose.connect(config.db.connectionString);
+	
+	mongoose.createConnection(config.db.connectionString);
     var db= mongoose.connection;
     db.on('error', function(err){
+            logger.error('mongo '+err);
+            mongoose.connection.close();
+            return;
+    });
+    next();
+    /*db.on('error', function(err){
         logger.error('mongo '+err);
     });	
 	db.once('open', function(){
+		logger.debug("ici");
 		User.find({token:req.cookies.accessToken}, function(err, docs){
-			logger.info('isLogged '+docs[0].userName);
-		});
-		if(req.user || req.cookies.accessToken){
+			if(err)
+				logger.error(err);
+			logger.info('user logged' + docs)
 			mongoose.connection.close();
 			next();
-		}else{
-			mongoose.connection.close();
-			res.send(401);
-		}
-	});
+		});
+	});*/
 }
 
 /**

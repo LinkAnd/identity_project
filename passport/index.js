@@ -23,11 +23,14 @@ module.exports = function(passport, config, logger) {
         var db= mongoose.connection;
         db.on('error', function(err){
             logger.error('mongo '+err);
+            mongoose.connection.close();
+            done(err);
         });
         db.once('open', function(){
            User.findById(id, function(err, doc){
                mongoose.connection.close();
-               done(doc);
+               logger.debug('deserialize user mongoose close');
+               done(null, doc);
            });
         });
     });
@@ -53,6 +56,8 @@ module.exports = function(passport, config, logger) {
         var db= mongoose.connection;
         db.on('error', function(err){
             logger.error('mongo '+err);
+            mongoose.connection.close();
+            done(err);
         });
         db.once('open', function(){
             User.find({fbUID:profile.id}, function(err, docs){
@@ -65,6 +70,7 @@ module.exports = function(passport, config, logger) {
                     docs[0].save(function(err, doc){
                         logger.info('connected '+profile.displayName)
                         mongoose.connection.close();
+                        logger.debug('is exist user mongoose close');
                         done(null, docs[0]);
                     });                    
                 }else{
@@ -77,6 +83,7 @@ module.exports = function(passport, config, logger) {
                     user.save(function(err, doc){
                         logger.info('persist '+profile.displayName);
                         mongoose.connection.close();
+                        ogger.debug('is save user mongoose close');
                         done(null, user);
                     })
                 }
