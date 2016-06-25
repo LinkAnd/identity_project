@@ -70,6 +70,7 @@ module.exports = function(passport, config, logger) {
                     docs[0].save(function(err, doc){
                         logger.info('connected '+profile.displayName)
                         mongoose.connection.close();
+                        logger.info('tocken : '+token);
                         logger.debug('is exist user mongoose close');
                         done(null, docs[0]);
                     });                    

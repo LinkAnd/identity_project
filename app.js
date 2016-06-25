@@ -46,29 +46,40 @@ app.get('/auth/facebook/callback',
 	    failureRedirect : '/'
 }));
 
-function isLogged(req, res, next){
-	
-	mongoose.createConnection(config.db.connectionString);
-    var db= mongoose.connection;
+function isLogged(req, res, next){	
+	var db = mongoose.createConnection(config.db.connectionString); // to be carefull with this
+    
     db.on('error', function(err){
             logger.error('mongo '+err);
             mongoose.connection.close();
             return;
     });
-    next();
-    /*db.on('error', function(err){
-        logger.error('mongo '+err);
-    });	
-	db.once('open', function(){
-		logger.debug("ici");
-		User.find({token:req.cookies.accessToken}, function(err, docs){
-			if(err)
-				logger.error(err);
-			logger.info('user logged' + docs)
-			mongoose.connection.close();
-			next();
-		});
-	});*/
+    if(req.user){
+    	logger.info("user logged "+req.user.userName);
+    	next();
+    }
+    var accessToken = req.cookies.accessToken || req.headers.accesstoken;
+    if(!accessToken){
+    	logger.error('request invalid : '+req);
+    	res.send(401);
+    	return;
+    }
+ 	logger.info('third party use token :'+accessToken); 	
+ 	db.once('open', function(){
+ 		var U = db.model('User');
+ 		U.find({token:accessToken}, function(err, docs){
+ 			if(docs.length > 1){
+ 				res.send(409)
+ 				logger.error('conflict for the token');
+ 				db.close();
+ 				return false;
+ 			}
+ 			logger.info('found '+ docs);
+ 			req.user = docs[0];
+ 			db.close();
+ 			next();
+ 		});
+ 	});
 }
 
 /**
@@ -99,7 +110,9 @@ app.get('/logged', isLogged, function(req, res){
 */
 
 app.get('/authorize', isLogged, function(req, res){
-	logger.info('disconnect '+req.user.userName);
+	if(!req.user){
+		res.send(401);
+	}
 	res.json(req.user);
 });
 
