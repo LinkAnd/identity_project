@@ -131,6 +131,12 @@ app.get('/whois/:uid', isLogged, function(req, res){
     });
     db.once('open', function(){
     	User.findById(req.params['uid'], function(err, doc){
+    		if(err || !doc){
+    			logger.error("whois route not found user for : "+req.params['uid']);
+    			mongoose.connection.close();
+    			res.send(404);
+    			return;
+    		}
     		mongoose.connection.close();
     		var usr = doc.toJSON();
     		var usrClean = _.omit(usr, config.privacyColumns);
