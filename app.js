@@ -37,6 +37,13 @@ var mongoose = require('mongoose');
 var authorization = new passportLocal(passport, config, logger);
 app.use(authorization.initialize());
 app.use(authorization.session());
+
+app.use(function(req, res, next) {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, accessToken");
+  next();
+});
+
 app.get('/auth/facebook', authorization.authenticate('facebook', { scope : ['email', 'public_profile', 'user_posts'] }));
 
 // handle the callback after facebook has authenticated the user
@@ -46,7 +53,7 @@ app.get('/auth/facebook/callback',
 	    failureRedirect : '/'
 }));
 
-function isLogged(req, res, next){	
+function isLogged(req, res, next){
 	var db = mongoose.createConnection(config.db.connectionString); // to be carefull with this
     
     db.on('error', function(err){
@@ -100,9 +107,7 @@ app.get('/logout', function(req, res){
 
 app.get('/logged', isLogged, function(req, res){
 	logger.info('logged '+req.user.userName);
-	var cookie = req.cookies.accessToken;
-    res.cookie('accessToken',req.user.token, { maxAge: 900000, httpOnly: true });
-    res.redirect('http://localhost:3001/');
+    res.redirect(config.frontendURl+req.user.token);
 });
 
 /*

@@ -23,5 +23,6 @@ module.exports = {
 		"fbUID",
 		"__v",
 		"token"
-	]
+	],
+	frontendURl : 'http://localhost:9000/#/authorize/'
 }
