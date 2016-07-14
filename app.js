@@ -7,7 +7,7 @@ var passportLocal = require('./passport');
 var cookieParser = require('cookie-parser');
 var bodyParser   = require('body-parser');
 var session      = require('express-session');
-
+var _            = require('lodash');
 
 /**
 *  middleware section
@@ -108,12 +108,36 @@ app.get('/logged', isLogged, function(req, res){
 /*
 * IMPORTANT PRIVATE route
 */
-
 app.get('/authorize', isLogged, function(req, res){
 	if(!req.user){
 		res.send(401);
 	}
 	res.json(req.user);
+});
+
+/**
+* IMPORTANT PRIVATE ROUTE
+*/
+app.get('/whois/:uid', isLogged, function(req, res){
+	if(!req.params['uid']){
+		res.send(404);
+	}
+	mongoose.connect(config.db.connectionString);
+    var db= mongoose.connection;
+    db.on('error', function(err){
+        logger.error('mongo '+err);
+        mongoose.connection.close();
+        done(err);
+    });
+    db.once('open', function(){
+    	User.findById(req.params['uid'], function(err, doc){
+    		mongoose.connection.close();
+    		var usr = doc.toJSON();
+    		var usrClean = _.omit(usr, config.privacyColumns);
+    		logger.info(usrClean);
+    		res.json(usrClean);
+    	});
+    });
 });
 
 

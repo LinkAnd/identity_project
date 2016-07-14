@@ -18,5 +18,10 @@ module.exports = {
 	},
 	session: {
 		secret: 'ASCft125'
-	}
+	},
+	privacyColumns : [
+		"fbUID",
+		"__v",
+		"token"
+	]
 }
