@@ -121,9 +121,9 @@ app.get('/authorize', isLogged, function(req, res){
 });
 
 /**
-* IMPORTANT PRIVATE ROUTE
+* IMPORTANT PUBLIC ROUTE
 */
-app.get('/whois/:uid', isLogged, function(req, res){
+app.get('/whois/:uid', function(req, res){
 	if(!req.params['uid']){
 		res.send(404);
 	}
