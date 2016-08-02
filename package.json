@@ -25,5 +25,17 @@
     "passport-facebook": "^2.1.1",
     "passport-facebook-token": "^3.2.0",
     "passport-local": "^1.0.0"
-  }
+  },
+  "directories": {
+    "test": "test"
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LinkAnd/identity_project.git"
+  },
+  "bugs": {
+    "url": "https://github.com/LinkAnd/identity_project/issues"
+  },
+  "homepage": "https://github.com/LinkAnd/identity_project#readme"
 }
